@@ -1,0 +1,30 @@
+import { test, expect} from '@playwright/test';
+import {LoginPage} from '../pages/loginpage';
+import { ProductsPage } from '../pages/productspage';
+import { cartpage } from '../pages/cart page';
+import { CheckoutPage } from '../pages/checkout';
+test.describe('SauceDemo Login Tests', () => {
+    test('Valid Login Test', async ({page}) => {
+        await page.goto('https://www.saucedemo.com/');
+        const login = new LoginPage(page);
+        await login.logintoapp();
+        await expect(page).toHaveURL('https://www.saucedemo.com/inventory.html');
+        const products = new ProductsPage(page);
+        const cart = new cartpage(page);
+        await products.addfirstproduct();
+        await page.locator('.shopping_cart_link').click();
+        await expect(page).toHaveURL('https://www.saucedemo.com/cart.html');
+        await cart.continueshopping();
+        await products.addsecondproduct();
+        await expect(page.locator('.shopping_cart_link')).toHaveText('2');
+        await expect(products.removebutton).toHaveText('Remove');
+        await cart.checkout();
+        await expect(page).toHaveURL('https://www.saucedemo.com/checkout-step-one.html');
+        const checkout = new CheckoutPage(page);
+        await checkout.enterCheckoutInformation();
+        await checkout.finishCheckout();
+        await expect(page).toHaveURL('https://www.saucedemo.com/checkout-complete.html');
+        await expect(page.locator('.complete-header')).toHaveText('Thank you for your order!');
+        await expect(checkout.backhomeButton).toBeVisible();
+    });
+});
